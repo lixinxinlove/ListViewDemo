@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.AbsListView.OnScrollListener;
+
 import com.love.lixinxin.listview.R;
 
 /**
@@ -15,14 +16,22 @@ import com.love.lixinxin.listview.R;
  */
 public class PullUpListView extends ListView implements OnScrollListener {
 
-    /** 底部显示正在加载的页面 */
+    /**
+     * 底部显示正在加载的页面
+     */
     private View footerView = null;
-    /** 存储上下文 */
+    /**
+     * 存储上下文
+     */
     private Context context;
-    /** 上拉刷新的ListView的回调监听 */
+    /**
+     * 上拉刷新的ListView的回调监听
+     */
     private PullUpListViewCallBack pullUpListViewCallBack;
-    /** 记录第一行Item的数值 */
-    private int firstVisibleItem;
+
+
+    //加载footerView 高度
+    private int footerViewHeight;
 
     public PullUpListView(Context context) {
         super(context);
@@ -44,7 +53,7 @@ public class PullUpListView extends ListView implements OnScrollListener {
         // 为ListView设置滑动监听
         setOnScrollListener(this);
         // 去掉底部分割线
-        setFooterDividersEnabled(false);
+        //setFooterDividersEnabled(false);
     }
 
     /**
@@ -53,8 +62,10 @@ public class PullUpListView extends ListView implements OnScrollListener {
     public void initBottomView() {
 
         if (footerView == null) {
-            footerView = LayoutInflater.from(this.context).inflate(
-                    R.layout.listview_loadbar, null);
+            footerView = LayoutInflater.from(this.context).inflate(R.layout.listview_loadbar, null);
+            footerView.measure(0, 0);//主动通知系统去测量该view;
+            footerViewHeight = footerView.getMeasuredHeight();
+            footerView.setPadding(0, -footerViewHeight, 0, 0);
         }
         addFooterView(footerView);
     }
@@ -62,28 +73,28 @@ public class PullUpListView extends ListView implements OnScrollListener {
     public void onScrollStateChanged(AbsListView view, int scrollState) {
 
         //当滑动到底部时
-        if (scrollState == OnScrollListener.SCROLL_STATE_IDLE &&
-                firstVisibleItem > 0 && getLastVisiblePosition()==getCount()-1) {
+        if (scrollState == OnScrollListener.SCROLL_STATE_IDLE && getLastVisiblePosition() == getCount() - 1) {
+
+            footerView.setPadding(0, 0, 0, 0);//显示出footerView
+
+            setSelection(getCount());//让listview最后一条显示出来
+
             pullUpListViewCallBack.scrollBottomState();
+
         }
     }
 
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
-        this.firstVisibleItem = firstVisibleItem;
-
-        if (footerView != null) {
-            //判断可视Item是否能在当前页面完全显示
-            if (visibleItemCount == totalItemCount) {
-                // removeFooterView(footerView);
-                footerView.setVisibility(View.GONE);//隐藏底部布局
-            } else {
-                // addFooterView(footerView);
-                footerView.setVisibility(View.VISIBLE);//显示底部布局
-            }
-        }
-
     }
+
+
+    public void completeRefresh() {
+
+        //重置footerView状态
+        footerView.setPadding(0, -footerViewHeight, 0, 0);
+    }
+
 
     public void setPullUpListViewCallBack(PullUpListViewCallBack pullUpListViewCallBack) {
         this.pullUpListViewCallBack = pullUpListViewCallBack;
@@ -93,7 +104,6 @@ public class PullUpListView extends ListView implements OnScrollListener {
      * 上拉刷新的ListView的回调监听
      *
      * @author xiejinxiong
-     *
      */
     public interface PullUpListViewCallBack {
 

@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         lists.add("上拉加载的数据");
                         adapter.mData=lists;
                         adapter.notifyDataSetChanged();
+                        listView.completeRefresh();
                         Toast.makeText(MainActivity.this, "加载更多...", Toast.LENGTH_SHORT).show();
                     }
                 },2000);
